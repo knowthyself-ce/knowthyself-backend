@@ -12,24 +12,30 @@ app.use(express.urlencoded({ extended: true }));
 // If behind a proxy (Render/NGINX), allow correct IPs
 app.set("trust proxy", true);
 
-// ✅ Allowed frontend origins
+// ✅ Allowed frontend origins (UPDATED)
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5500",
   "http://localhost:5000",
   "http://127.0.0.1:5500",
-  "https://knowthyself-7.vercel.app",
+
+  // ✅ ADD YOUR REAL VERCEL URL HERE
+  "https://knowthyself-frontend-eight.vercel.app",
 ];
 
-// ✅ CORS setup
+// ✅ CORS setup (FIXED)
 app.use(
   cors({
     origin: (origin, callback) => {
       console.log("Origin received:", origin);
 
-      if (!origin || allowedOrigins.includes(origin)) {
+      // allow requests with no origin (like mobile apps, curl, uptime robot)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log("❌ Blocked by CORS:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
@@ -48,7 +54,7 @@ const startServer = async () => {
     await mongoose.connect(MONGODB_URI);
     console.log("✅ MongoDB connected");
 
-    // ✅ Root route (FIXED)
+    // Root route
     app.get("/", (req, res) => {
       res.json({ message: "Server is running 🚀" });
     });
